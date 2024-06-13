@@ -4,13 +4,15 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
-    [SerializeField] WeaponModel weapon;
+    [SerializeField] WeaponData weaponData;
     [SerializeField] Transform firePoint;
     [SerializeField] GameObject bulletImpact;
-    int magazine, bulletForShoot;
+    int magazine, bulletsForShoot;
     float timeToShoot;
     int fireRate;
     float spread;
+    int currentMagazine;
+    int ammo;
 
     MeshRenderer meshRenderer;
     MeshFilter meshFilter;
@@ -21,53 +23,62 @@ public class Weapon : MonoBehaviour
         meshRenderer = GetComponentInChildren<MeshRenderer>();
         meshFilter = GetComponentInChildren<MeshFilter>();
         
-        magazine = weapon.MagazineCap;
-        timeToShoot = weapon.TimeBetweenShoots;
-        bulletForShoot = weapon.BulletsForrShoot;
-        spread = weapon.Spread;
+        magazine = weaponData.MagazineCap;
+        timeToShoot = weaponData.TimeBetweenShoots;
+        bulletsForShoot = weaponData.BulletsForShoot;
+        spread = weaponData.Spread;
 
-        meshFilter.mesh = weapon.Model;
-        meshRenderer.material = weapon.Material;
+        meshFilter.mesh = weaponData.Model;
+        meshRenderer.material = weaponData.Material;
+    }
+
+    void Fire()
+    {
+        StartCoroutine(FireCoroutine());
     }
 
     private IEnumerator FireCoroutine()
     {
-        magazine--; 
-
-        if (Time.time > timeToShoot)
+        //Verifica se pode disparar
+        if (Time.time >= timeToShoot)
         {
+            timeToShoot = Time.time + 1 / weaponData.FireRate;
 
-            timeToShoot = Time.time + 1 / fireRate;
-
-            for (int i = 0; i < bulletForShoot; i++)
+            for (int i = 0; i < weaponData.BulletsForShoot; i++)
             {
-                Shoot();
-                yield return new WaitForSeconds(timeToShoot);
+                if(currentMagazine > 0)
+                {
+                    currentMagazine--;
+                    Shoot();
+                    yield return new WaitForSeconds(weaponData.TimeBetweenShoots);
+                }
             }
         }
     }
 
     private void Shoot()
     {
+        // Variável para armazenar o que foi atingido
         RaycastHit hit;
-        Vector3 direction = Vector3.forward * Time.deltaTime;
-        float range = weapon.Range + weapon.Spread;
-
-        if (Physics.Raycast(firePoint.position, direction, out hit, range))
+        // Direção do disparo, considerando a dispersão da arma
+        Vector3 direction = firePoint.forward + new Vector3(Random.Range(-weaponData.Spread, weaponData.Spread), Random.Range(-weaponData.Spread, weaponData.Spread), 0);
+        // Verifica se acertou algo na direção do disparo dentro do alcance
+        if (Physics.Raycast(firePoint.position, direction, out hit, weaponData.Range))
         {
-            Collider obj = hit.transform.GetComponent<Collider>();
-            if (obj != null)
-            {
-                Debug.Log(obj.gameObject.name);
-                Instantiate(bulletImpact, hit.point, Quaternion.LookRotation(hit.normal));
-            }
+            Instantiate(bulletImpact,hit.point, Quaternion.identity);
+            // Desenha uma linha para visualizar o trajeto do projétil
+            Debug.DrawLine(firePoint.position, direction * weaponData.Range);
         }
 
-        Debug.DrawLine(firePoint.position, firePoint.position + direction * range);
     }
+    void Reload()
+    {
+        StartCoroutine(ReloadCoroutine());
+    }
+
     private IEnumerator ReloadCoroutine()
     {
-        if ()
+        if (currentMagazine < weaponData.MagazineCap && ammo > 0)
         {
 
         }
