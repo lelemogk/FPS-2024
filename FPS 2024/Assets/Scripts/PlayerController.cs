@@ -38,4 +38,34 @@ public class PlayerController : MonoBehaviour
     {
         
     }
+
+    private void Movement()
+    {
+
+    }
+
+    private void Rotation()
+    {
+
+    }
+
+    private void Fire()
+    {
+
+    }
+
+    private void Jump()
+    {
+
+    }
+
+    private void Crouch()
+    {
+
+    }
+
+    private void ThrowGrenade()
+    {
+
+    }
 }
