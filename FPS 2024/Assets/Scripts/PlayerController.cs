@@ -127,12 +127,10 @@ public class PlayerController : MonoBehaviourPun
 
     void ThrowGrenade()
     {
-        GameObject grenade = Instantiate(grenadePrefab, throwPoint.position, camTransform.rotation);
+        Grenade grenade = NetworkManager.instance.Instantiate("Prefabs/Grenade", throwPoint.position, camTransform.rotation).GetComponent<Grenade>();
 
         Vector3 throwForce = transform.up * throwForceUp + camTransform.forward * throwForceForward;
 
-        grenade.GetComponent<Rigidbody>().AddForce(throwForce, ForceMode.Impulse);
-
-        Destroy(grenade, 10);
+        grenade.photonView.RPC("Initialize", RpcTarget.All, throwForce);
     }
 }
